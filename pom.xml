@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.struqt</groupId>
   <artifactId>outlinc-sec</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -204,7 +204,7 @@
     <developerConnection>
       scm:git:ssh://git@bitbucket.org/struqt/outlinc-sec.git
     </developerConnection>
-    <tag>outlinc-sec-1.0.0</tag>
+    <tag>HEAD</tag>
   </scm>
 
   <distributionManagement>
