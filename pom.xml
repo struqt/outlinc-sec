@@ -19,9 +19,10 @@
     <module>outlinc-crypto</module>
   </modules>
 
+  <name>outlinc-sec</name>
   <url>http://www.struqt.com/outlinc</url>
   <description>
-    Java Class libraries for security concern
+    Java class libraries for security communication
   </description>
 
   <organization>
@@ -100,6 +101,16 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
       </plugin>
     </plugins>
     <pluginManagement>
@@ -186,6 +197,11 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.5.0</version>
         </plugin>
+        <plugin>
+          <groupId>org.sonatype.plugins</groupId>
+          <artifactId>nexus-staging-maven-plugin</artifactId>
+          <version>1.6.7</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -198,8 +214,9 @@
   </developers>
 
   <scm>
+    <url>https://github.com/struqt/outlinc-sec/tree/${project.scm.tag}</url>
     <connection>
-      scm:git:ssh://git@bitbucket.org/struqt/outlinc-sec.git
+      scm:git:ssh://git@github.com/struqt/outlinc-sec.git
     </connection>
     <developerConnection>
       scm:git:ssh://git@bitbucket.org/struqt/outlinc-sec.git
