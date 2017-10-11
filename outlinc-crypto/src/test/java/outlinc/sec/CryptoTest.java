@@ -22,6 +22,7 @@ public class CryptoTest {
     private static final String account = "test";
     private static final String secret = "abc";
     private static final String message = "hello 123 !";
+    private static final String error = "<xml><error>600</error><hint>Some Error!</hint></xml>";
 
     @BeforeClass
     public static void init() throws Exception {
@@ -61,6 +62,14 @@ public class CryptoTest {
 
         log("encrypted:%s", encrypted);
         log("encrypted:%s", encrypted2);
+    }
+
+    @Test
+    public void test_02_DecryptError() throws GeneralSecurityException, XMLStreamException {
+        CryptoData decrypted = CryptoData.decryptFromXml(error);
+        Assert.assertEquals(600, decrypted.getError().intValue());
+        Assert.assertEquals("Some Error!", decrypted.getErrorHint());
+
     }
 
     static private void log(String template, Object... args) {

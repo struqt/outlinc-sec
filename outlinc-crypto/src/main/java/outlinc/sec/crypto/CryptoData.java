@@ -52,6 +52,9 @@ public class CryptoData {
 
     static public CryptoData decryptFromXml(byte[] xml, Charset charset) throws XMLStreamException, GeneralSecurityException {
         CryptoData data = decodeFromXml(xml, charset);
+        if (data.getError() != 0) {
+            return data;
+        }
         EncryptAccount a = accounts.get(data.account);
         if (a == null) {
             throw new GeneralSecurityException("No EncryptAccount with name: " + data.account);
@@ -69,8 +72,18 @@ public class CryptoData {
     private String message = "";
     private String encrypted;
     private String signature;
+    private Integer error = 0;
+    private String hint = "";
 
     private CryptoData() {
+    }
+
+    public Integer getError() {
+        return error;
+    }
+
+    public String getErrorHint() {
+        return hint;
     }
 
     public String getAccount() {
@@ -206,6 +219,12 @@ public class CryptoData {
                             case signature:
                                 data.signature = val;
                                 break;
+                            case error:
+                                data.error = Integer.valueOf(val);
+                                break;
+                            case hint:
+                                data.hint = val;
+                                break;
                             default:
                                 break;
                         }
@@ -234,7 +253,7 @@ public class CryptoData {
     }
 
     private enum XmlElement {
-        none, account, nonce, timestamp, message, encrypted, signature
+        none, account, nonce, timestamp, message, encrypted, signature, error, hint
     }
 
     static private class EncryptAccount {
