@@ -30,6 +30,17 @@ public class CryptoData {
         return encryptToXml(account, message, null);
     }
 
+    static public String errorXml(Integer error, String hint) {
+        StringBuilder s = new StringBuilder();
+        s.append('<').append("xml").append('>');
+        makeXmlNode("error", error.toString(), s);
+        if (hint != null && hint.length() > 0) {
+            makeXmlCDataNode("hint", hint, s);
+        }
+        s.append('<').append('/').append("xml").append('>');
+        return s.toString();
+    }
+
     static public String encryptToXml(String account, String message, Map<String, String> debug) throws XMLStreamException, GeneralSecurityException {
         EncryptAccount a = accounts.get(account);
         if (a == null) {
