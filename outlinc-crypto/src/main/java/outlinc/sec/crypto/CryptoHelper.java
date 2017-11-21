@@ -7,17 +7,31 @@ import java.nio.ByteBuffer;
 import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Arrays;
-import java.util.Random;
 
 public class CryptoHelper {
 
+    static private final SecureRandom random = new SecureRandom();
     static private final int ivBytesLen = 16;
     static private final int padBytesLenMax = 16; /*32*/
 
+    public static long randomLong() {
+        return random.nextLong();
+    }
+
+    public static byte[] randomBytes(int len) {
+        if (len < 0) {
+            return null;
+        }
+        byte[] bytes = new byte[len];
+        random.nextBytes(bytes);
+        return bytes;
+    }
+
     public static byte[] encryptAES(byte[] key, byte[] content) throws GeneralSecurityException {
         byte[] ivBytes = new byte[ivBytesLen];
-        new Random().nextBytes(ivBytes);
+        random.nextBytes(ivBytes);
         byte[] lengthBytes = encodeInteger(content.length);
         int lenWithoutPad = ivBytesLen + lengthBytes.length + content.length;
         byte[] padBytes = encodePKCS7(lenWithoutPad);

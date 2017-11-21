@@ -12,20 +12,18 @@ import outlinc.sec.crypto.CryptoHelper;
 import javax.xml.stream.XMLStreamException;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
-import java.util.Random;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class CryptoTest {
 
     private static final Charset UTF_8 = Charset.forName("utf-8");
-    private static final byte[] key = new byte[32];
+    private static final byte[] key = CryptoHelper.randomBytes(32);
     private static final String account = "test";
     private static final String secret = "abc";
     private static final String message = "hello 123 !";
 
     @BeforeClass
     public static void init() throws Exception {
-        new Random().nextBytes(key);
         String k = new Base64().encodeToString(key);
         CryptoData.accountAdd(account, secret, k, true);
         log("secret:%s, key:%s", secret, k);
@@ -35,10 +33,12 @@ public class CryptoTest {
 
     @Test
     public void test_01_AES() throws GeneralSecurityException {
-        String text = message;
+        String text = "encrypted:<xml><account>test<|fjdajfkdsafjkldjf";
         byte[] encrypted = CryptoHelper.encryptAES(key, text.getBytes(UTF_8));
         byte[] decrypted = CryptoHelper.decryptAES(key, encrypted);
         Assert.assertEquals(text, new String(decrypted, UTF_8));
+
+        System.out.println(Base64.encodeBase64URLSafeString(encrypted));
     }
 
 

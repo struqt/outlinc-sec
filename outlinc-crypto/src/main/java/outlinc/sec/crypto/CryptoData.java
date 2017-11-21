@@ -11,40 +11,85 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CryptoData {
 
+    /**
+     * Define an account for data encryption and decryption
+     * You must define an account before encryption or decryption
+     *
+     * @param name   Account name
+     * @param secret A secret string for message signature
+     * @param keyStr A base64 encoded string as symmetric encryption key
+     * @param debug  Enable debug support
+     */
     static public void accountAdd(String name, String secret, String keyStr, boolean debug) {
-        EncryptAccount a = new EncryptAccount(name, new Base64().decode(keyStr), secret, debug);
+        if (name == null || name.length() <= 0) {
+            return;
+        }
+        byte[] key = new Base64().decode(keyStr);
+        if (key == null || key.length <= 0) {
+            return;
+        }
+        EncryptAccount a = new EncryptAccount(name, key, secret, debug);
         accounts.put(name, a);
     }
 
+    /**
+     * Check if the account support debug mode
+     *
+     * @param name Account name
+     * @return Enable debug support
+     */
     static public boolean accountDebug(String name) {
         return accounts.containsKey(name) && accounts.get(name).debug;
     }
 
-    static public String encryptToXml(String account, String message) throws XMLStreamException, GeneralSecurityException {
-        return encryptToXml(account, message, null);
-    }
-
+    /**
+     * Make error message
+     *
+     * @param error Error code
+     * @param hint  Error hint
+     * @return Message with XML format
+     */
     static public String errorXml(Integer error, String hint) {
         StringBuilder s = new StringBuilder();
         s.append('<').append("xml").append('>');
-        makeXmlNode("error", error.toString(), s);
+        makeXmlNode(XmlElement.error, error.toString(), s);
         if (hint != null && hint.length() > 0) {
-            makeXmlCDataNode("hint", hint, s);
+            makeXmlCDataNode(XmlElement.hint.name(), hint, s);
         }
         s.append('<').append('/').append("xml").append('>');
         return s.toString();
     }
 
-    static public String encryptToXml(String account, String message, Map<String, String> debug) throws XMLStreamException, GeneralSecurityException {
+    /**
+     * Make encrypted message with xml format
+     *
+     * @param account Account name
+     * @param message Content of message
+     * @return Message with XML format
+     * @throws GeneralSecurityException Encryption exception
+     */
+    static public String encryptToXml(String account, String message) throws GeneralSecurityException {
+        return encryptToXml(account, message, null);
+    }
+
+    /**
+     * Make encrypted message with xml format
+     *
+     * @param account Account name
+     * @param message Content of message
+     * @param debug   Elements for debug
+     * @return Message with XML format
+     * @throws GeneralSecurityException Encryption exception
+     */
+    static public String encryptToXml(String account, String message, Map<String, String> debug) throws GeneralSecurityException {
         EncryptAccount a = accounts.get(account);
         if (a == null) {
-            throw new GeneralSecurityException("No EncryptAccount with name: " + account);
+            throw new GeneralSecurityException("No encryption account with name: " + account);
         }
         CryptoData data = new CryptoData();
         data.account = account;
@@ -107,7 +152,7 @@ public class CryptoData {
 
     private String encryptToXml(String token, byte[] key, Map<String, String> debug) throws GeneralSecurityException {
         if (nonce == null || nonce.length() <= 0) {
-            nonce = String.valueOf(Math.abs(new Random().nextLong()));
+            nonce = String.valueOf(Math.abs(CryptoHelper.randomLong()));
         }
         if (timestamp == null || timestamp.length() <= 0) {
             timestamp = String.valueOf(System.currentTimeMillis() / 1000L);
@@ -142,7 +187,7 @@ public class CryptoData {
 
     private static final Charset UTF_8 = Charset.forName("utf-8");
     private static final XMLInputFactory fac = XMLInputFactory.newFactory();
-    private static final Map<String, EncryptAccount> accounts = new HashMap<String, EncryptAccount>();
+    private static final Map<String, EncryptAccount> accounts = new ConcurrentHashMap<String, EncryptAccount>();
 
     static {
         fac.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
@@ -178,11 +223,11 @@ public class CryptoData {
     static private String encodeToXml(CryptoData data, Map<String, String> debug) {
         StringBuilder s = new StringBuilder();
         s.append('<').append("xml").append('>');
-        makeXmlNode("account", data.account, s);
-        makeXmlNode("nonce", data.nonce, s);
-        makeXmlNode("timestamp", data.timestamp, s);
-        makeXmlNode("encrypted", data.encrypted, s);
-        makeXmlNode("signature", data.signature, s);
+        makeXmlNode(XmlElement.account, data.account, s);
+        makeXmlNode(XmlElement.nonce, data.nonce, s);
+        makeXmlNode(XmlElement.timestamp, data.timestamp, s);
+        makeXmlNode(XmlElement.encrypted, data.encrypted, s);
+        makeXmlNode(XmlElement.signature, data.signature, s);
         if (debug != null && debug.size() > 0) {
             s.append('<').append("debug").append('>');
             for (Map.Entry<String, String> e : debug.entrySet()) {
@@ -248,6 +293,11 @@ public class CryptoData {
             reader.next();
         }
     } /* readXmlList */
+
+
+    static private void makeXmlNode(XmlElement element, String value, StringBuilder s) {
+        makeXmlNode(element.name(), value, s);
+    }
 
     static private void makeXmlNode(String name, String value, StringBuilder s) {
         s.append('<').append(name).append('>');
