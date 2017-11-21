@@ -1,5 +1,7 @@
 package outlinc.sec.crypto;
 
+import org.apache.commons.codec.binary.Base64;
+
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -9,12 +11,15 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class CryptoHelper {
 
     static private final SecureRandom random = new SecureRandom();
     static private final int ivBytesLen = 16;
     static private final int padBytesLenMax = 16; /*32*/
+    private static final Map<String, EncryptAccount> accounts = new ConcurrentHashMap<String, EncryptAccount>();
 
     public static long randomLong() {
         return random.nextLong();
@@ -28,6 +33,42 @@ public class CryptoHelper {
         random.nextBytes(bytes);
         return bytes;
     }
+
+    static public EncryptAccount account(String name) {
+        return accounts.get(name);
+    }
+
+    /**
+     * Check if the account support debug mode
+     *
+     * @param name Account name
+     * @return Enable debug support
+     */
+    static public boolean accountDebug(String name) {
+        return accounts.containsKey(name) && accounts.get(name).debug;
+    }
+
+    /**
+     * Define an account for data encryption and decryption
+     * You must define an account before encryption or decryption
+     *
+     * @param name   Account name
+     * @param secret A secret string for message signature
+     * @param keyStr A base64 encoded string as symmetric encryption key
+     * @param debug  Enable debug support
+     */
+    static public void accountAdd(String name, String secret, String keyStr, boolean debug) {
+        if (name == null || name.length() <= 0) {
+            return;
+        }
+        byte[] key = new Base64().decode(keyStr);
+        if (key == null || key.length <= 0) {
+            return;
+        }
+        EncryptAccount a = new EncryptAccount(name, key, secret, debug);
+        accounts.put(name, a);
+    }
+
 
     public static byte[] encryptAES(byte[] key, byte[] content) throws GeneralSecurityException {
         byte[] ivBytes = new byte[ivBytesLen];
@@ -101,7 +142,7 @@ public class CryptoHelper {
         return n;
     }
 
-    private static byte[] digest(String s, String algorithm) throws NoSuchAlgorithmException {
+    static byte[] digest(String s, String algorithm) throws NoSuchAlgorithmException {
         byte[] bytes;
         MessageDigest messageDigest = MessageDigest.getInstance(algorithm);
         messageDigest.update(s.getBytes());
@@ -122,6 +163,22 @@ public class CryptoHelper {
             s.append(tempStr);
         }
         return s.toString().toLowerCase();
+    }
+
+
+    static class EncryptAccount {
+
+        final String name;
+        final byte[] key;
+        final String secret;
+        final boolean debug;
+
+        private EncryptAccount(String name, byte[] key, String secret, boolean debug) {
+            this.name = name;
+            this.key = key;
+            this.secret = secret;
+            this.debug = debug;
+        }
     }
 
 }

@@ -12,39 +12,17 @@ import java.nio.charset.Charset;
 import java.security.GeneralSecurityException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class CryptoData {
 
-    /**
-     * Define an account for data encryption and decryption
-     * You must define an account before encryption or decryption
-     *
-     * @param name   Account name
-     * @param secret A secret string for message signature
-     * @param keyStr A base64 encoded string as symmetric encryption key
-     * @param debug  Enable debug support
-     */
+    @Deprecated
     static public void accountAdd(String name, String secret, String keyStr, boolean debug) {
-        if (name == null || name.length() <= 0) {
-            return;
-        }
-        byte[] key = new Base64().decode(keyStr);
-        if (key == null || key.length <= 0) {
-            return;
-        }
-        EncryptAccount a = new EncryptAccount(name, key, secret, debug);
-        accounts.put(name, a);
+        CryptoHelper.accountAdd(name, secret, keyStr, debug);
     }
 
-    /**
-     * Check if the account support debug mode
-     *
-     * @param name Account name
-     * @return Enable debug support
-     */
+    @Deprecated
     static public boolean accountDebug(String name) {
-        return accounts.containsKey(name) && accounts.get(name).debug;
+        return CryptoHelper.accountDebug(name);
     }
 
     /**
@@ -87,7 +65,7 @@ public class CryptoData {
      * @throws GeneralSecurityException Encryption exception
      */
     static public String encryptToXml(String account, String message, Map<String, String> debug) throws GeneralSecurityException {
-        EncryptAccount a = accounts.get(account);
+        CryptoHelper.EncryptAccount a = CryptoHelper.account(account);
         if (a == null) {
             throw new GeneralSecurityException("No encryption account with name: " + account);
         }
@@ -111,7 +89,7 @@ public class CryptoData {
         if (data.getError() != 0) {
             return data;
         }
-        EncryptAccount a = accounts.get(data.account);
+        CryptoHelper.EncryptAccount a = CryptoHelper.account(data.account);
         if (a == null) {
             throw new GeneralSecurityException("No EncryptAccount with name: " + data.account);
         }
@@ -187,7 +165,6 @@ public class CryptoData {
 
     private static final Charset UTF_8 = Charset.forName("utf-8");
     private static final XMLInputFactory fac = XMLInputFactory.newFactory();
-    private static final Map<String, EncryptAccount> accounts = new ConcurrentHashMap<String, EncryptAccount>();
 
     static {
         fac.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, Boolean.FALSE);
@@ -317,18 +294,5 @@ public class CryptoData {
         none, account, nonce, timestamp, message, encrypted, signature, error, hint
     }
 
-    static private class EncryptAccount {
 
-        final String name;
-        final byte[] key;
-        final String secret;
-        final boolean debug;
-
-        private EncryptAccount(String name, byte[] key, String secret, boolean debug) {
-            this.name = name;
-            this.key = key;
-            this.secret = secret;
-            this.debug = debug;
-        }
-    }
 }
