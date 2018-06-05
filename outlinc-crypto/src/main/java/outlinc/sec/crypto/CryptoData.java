@@ -1,7 +1,5 @@
 package outlinc.sec.crypto;
 
-import org.apache.commons.codec.binary.Base64;
-
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -142,19 +140,19 @@ public class CryptoData {
             token = "";
         }
         byte[] bytes = CryptoHelper.encryptAES(key, message.getBytes(UTF_8));
-        this.encrypted = new Base64().encodeToString(bytes);
+        this.encrypted = CryptoHelper.encodeBase64Raw(bytes);
         this.signature = CryptoHelper.SHA256(token + nonce + timestamp + encrypted);
         return encodeToXml(this, debug);
     }
 
     private void decrypt(byte[] key, boolean debug) throws GeneralSecurityException {
-        byte[] bytes = Base64.decodeBase64(encrypted);
+        byte[] bytes = CryptoHelper.decodeBase64(encrypted);
         byte[] decrypted = CryptoHelper.decryptAES(key, bytes);
         if (!debug || message == null || message.trim().length() <= 0) {
             message = new String(decrypted, UTF_8);
         } else {
             byte[] raw = CryptoHelper.encryptAES(key, message.getBytes(UTF_8));
-            encrypted = new Base64().encodeToString(raw);
+            encrypted = CryptoHelper.encodeBase64Raw(raw);
         }
     }
 
