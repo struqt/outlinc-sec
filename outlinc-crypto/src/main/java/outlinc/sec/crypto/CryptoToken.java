@@ -1,7 +1,5 @@
 package outlinc.sec.crypto;
 
-import org.apache.commons.codec.binary.Base64;
-
 import java.security.GeneralSecurityException;
 
 public class CryptoToken {
@@ -17,9 +15,9 @@ public class CryptoToken {
             throw new GeneralSecurityException("No security account: " + account);
         }
         byte[] encrypted = CryptoHelper.encryptAES(a.key, payload);
-        String encryptedBase64 = Base64.encodeBase64URLSafeString(encrypted);
+        String encryptedBase64 = CryptoHelper.encodeBase64UrlSafe(encrypted);
         String sigContent = a.secret + account + encryptedBase64;
-        String signature = Base64.encodeBase64URLSafeString(CryptoHelper.digest(sigContent, "SHA-256"));
+        String signature = CryptoHelper.encodeBase64UrlSafe(CryptoHelper.digest(sigContent, "SHA-256"));
         return account + SPLIT + encryptedBase64 + SPLIT + signature;
     }
 
@@ -39,10 +37,10 @@ public class CryptoToken {
             throw new GeneralSecurityException("No security account: " + account);
         }
         String sigContent = a.secret + account + encryptedBase64;
-        if (!signature.equals(Base64.encodeBase64URLSafeString(CryptoHelper.digest(sigContent, "SHA-256")))) {
+        if (!signature.equals(Base64.encodeToUrlSafe(CryptoHelper.digest(sigContent, "SHA-256")))) {
             throw new GeneralSecurityException("Signature mismatch");
         }
-        byte[] encrypted = Base64.decodeBase64(encryptedBase64);
+        byte[] encrypted = CryptoHelper.decodeBase64(encryptedBase64);
         return CryptoHelper.decryptAES(a.key, encrypted);
     }
 

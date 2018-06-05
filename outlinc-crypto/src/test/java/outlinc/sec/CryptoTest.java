@@ -1,11 +1,11 @@
 package outlinc.sec;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
+import outlinc.sec.crypto.Base64;
 import outlinc.sec.crypto.CryptoData;
 import outlinc.sec.crypto.CryptoHelper;
 import outlinc.sec.crypto.CryptoToken;
@@ -25,7 +25,7 @@ public class CryptoTest {
 
     @BeforeClass
     public static void init() throws Exception {
-        String k = new Base64().encodeToString(key);
+        String k = Base64.encodeToString(key);
         CryptoHelper.accountAdd(account, secret, k, true);
         log("secret:%s, key:%s", secret, k);
         CryptoHelper.decryptAES(key, CryptoHelper.encryptAES(key, message.getBytes(UTF_8)));

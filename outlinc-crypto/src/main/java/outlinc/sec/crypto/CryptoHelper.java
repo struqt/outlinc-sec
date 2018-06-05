@@ -1,7 +1,5 @@
 package outlinc.sec.crypto;
 
-import org.apache.commons.codec.binary.Base64;
-
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -61,7 +59,7 @@ public class CryptoHelper {
         if (name == null || name.length() <= 0) {
             return;
         }
-        byte[] key = new Base64().decode(keyStr);
+        byte[] key = decodeBase64(keyStr);
         if (key == null || key.length <= 0) {
             return;
         }
@@ -69,6 +67,17 @@ public class CryptoHelper {
         accounts.put(name, a);
     }
 
+    static public byte[] decodeBase64(final String base64) {
+        return Base64.decode(base64);
+    }
+
+    static public String encodeBase64UrlSafe(final byte[] bytes) {
+        return Base64.encodeToUrlSafe(bytes);
+    }
+
+    static public String encodeBase64Raw(final byte[] bytes) {
+        return Base64.encodeToString(bytes);
+    }
 
     public static byte[] encryptAES(byte[] key, byte[] content) throws GeneralSecurityException {
         byte[] ivBytes = new byte[ivBytesLen];
